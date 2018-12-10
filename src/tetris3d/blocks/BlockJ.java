@@ -11,16 +11,16 @@ import com.sun.javafx.geom.Vec3d;
  *
  * @author gabri
  */
-public class BlockI extends BlockBase
+public class BlockJ extends BlockBase
 {
-    public BlockI()
+    public BlockJ()
     {
-        setColor(new Vec3d(0, 1, 1));
+        setColor(new Vec3d(0, 0, 1));
 
+        getPieces().add(new Vec3d(0, 1, 0));
         getPieces().add(new Vec3d(0, 0, 0));
         getPieces().add(new Vec3d(1, 0, 0));
         getPieces().add(new Vec3d(2, 0, 0));
-        getPieces().add(new Vec3d(3, 0, 0));
     }
-
+    
 }
