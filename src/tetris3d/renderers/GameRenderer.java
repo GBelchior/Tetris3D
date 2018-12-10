@@ -70,12 +70,18 @@ public class GameRenderer implements GLEventListener
             @Override
             public void keyPressed(KeyEvent e)
             {
-                switch (e.getKeyChar()) 
+                switch (e.getKeyCode()) 
                 {
-                    case 'w': case 'W': gameManager.moveCurrentBlock(0, 0, -1); break;
-                    case 's': case 'S': gameManager.moveCurrentBlock(0, 0, 1); break;
-                    case 'a': case 'A': gameManager.moveCurrentBlock(-1, 0, 0); break;
-                    case 'd': case 'D': gameManager.moveCurrentBlock(1, 0, 0); break;
+                    case KeyEvent.VK_W: gameManager.getCurrentBlock().moveZ(gameManager.getBlocks(), -1); break;
+                    case KeyEvent.VK_S: gameManager.getCurrentBlock().moveZ(gameManager.getBlocks(), 1); break;
+                    case KeyEvent.VK_A: gameManager.getCurrentBlock().moveX(gameManager.getBlocks(), -1); break;
+                    case KeyEvent.VK_D: gameManager.getCurrentBlock().moveX(gameManager.getBlocks(), 1); break;
+                    
+                    case KeyEvent.VK_SHIFT: gameManager.getCurrentBlock().moveDown(gameManager.getBlocks()); break;
+                    
+                    case KeyEvent.VK_I: gameManager.getCurrentBlock().rotateX(); break;
+                    case KeyEvent.VK_O: gameManager.getCurrentBlock().rotateY(); break;
+                    case KeyEvent.VK_P: gameManager.getCurrentBlock().rotateZ(); break;
                 }
             }
 

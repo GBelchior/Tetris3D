@@ -27,7 +27,7 @@ public class GameManager
     private BlockBase nextBlock;
 
     private long lastBlockTick;
-    private final int blockTickTimeMillis = 100;
+    private final int blockTickTimeMillis = 500;
     
     private final int maxWidth = 7;
     private final int maxHeight = 15;
@@ -109,32 +109,14 @@ public class GameManager
         }
     }
     
-    public void moveCurrentBlock(int relativeX, int relativeY, int relativeZ)
+    public ArrayList<BlockBase> getBlocks()
     {
-        Vec3d curPos = new Vec3d(
-                currentBlock.getPosition().x,
-                currentBlock.getPosition().y,
-                currentBlock.getPosition().z
-        );
-        
-        curPos.x += relativeX;
-        curPos.y += relativeY;
-        curPos.z += relativeZ;
-        
-        if (curPos.x >= 0 && curPos.x + currentBlock.getXWidth() <= maxWidth) 
-        {
-            currentBlock.getPosition().x = curPos.x;
-        }
-        
-        if (curPos.y >= 0 && curPos.y + currentBlock.getHeight() <= maxHeight)
-        {
-            currentBlock.getPosition().y = curPos.y;
-        }
-        
-        if (curPos.z >= 0 && curPos.z + currentBlock.getZWidth() <= maxWidth) 
-        {
-            currentBlock.getPosition().z = curPos.z;
-        }
+        return blocks;
+    }
+    
+    public BlockBase getCurrentBlock()
+    {
+        return currentBlock;
     }
     
     private void cleanLevels() 

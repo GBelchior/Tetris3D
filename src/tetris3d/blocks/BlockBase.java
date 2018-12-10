@@ -23,12 +23,37 @@ public abstract class BlockBase
 
     private final Vec3d position;
     
+    private final int[][] rotX;
+    private final int[][] rotY;
+    private final int[][] rotZ;
+    
     public BlockBase()
     {
         pieces = new ArrayList<>();
         color = new Vec3d(1, 1, 1);
 
         position = new Vec3d(0, 15, 0);
+        
+        rotX = new int[][] 
+        {
+            {1, 0, 0},
+            {0, 0, -1},
+            {0, 1, 0}
+        };
+        
+        rotY = new int[][] 
+        {
+            {0, 0, 1},
+            {0, 1, 0},
+            {-1, 0, 0}
+        };
+        
+        rotZ = new int[][] 
+        {
+            {0, -1, 0},
+            {1, 0, 0},
+            {0, 0, 1}
+        };
     }
     
     public final void draw(GL gl, GLUT glut)
@@ -60,7 +85,7 @@ public abstract class BlockBase
     {
         Boolean canMoveDown = true;
         
-        if (position.y == 0) 
+        if (getY() == 0) 
         {
             canMoveDown = false;
         }
@@ -69,9 +94,9 @@ public abstract class BlockBase
                 .stream()
                 .filter(b -> 
                         b != this &&
-                        b.getYSpan() == position.y - 1 &&
-                        (position.x <= b.getXSpan() && getXSpan() >= b.getPosition().x) &&
-                        (position.z <= b.getZSpan() && getZSpan() >= b.getPosition().z)
+                        b.getYSpan() == getY() - 1 &&
+                        (getX() <= b.getXSpan() && getXSpan() >= b.getX()) &&
+                        (getZ() <= b.getZSpan() && getZSpan() >= b.getZ())
                 )
                 .count() > 0)
         {
@@ -85,7 +110,82 @@ public abstract class BlockBase
         
         return canMoveDown;
     }
+    
+    public void moveX(ArrayList<BlockBase> allBlocks, int direction)
+    {
+        int signal = (direction < 0 ? -1 : 1);
+        
+        if (getX() == (direction < 0 ? 0 : 15)) return;
+        
+        if (allBlocks
+                .stream()
+                .filter(b -> 
+                        b != this &&
+                        b.getXSpan() == getX() + signal &&
+                        (getZ() <= b.getZSpan() && getZSpan() >= b.getZ())
+                )
+                .count() > 0)
+        {
+            return;
+        }
+        
+        position.x += signal;
+    }
+    
+    public void moveZ(ArrayList<BlockBase> allBlocks, int direction)
+    {
+        int signal = (direction < 0 ? -1 : 1);
+        
+        if (getZ() == (direction < 0 ? 0 : 15)) return;
+        
+        if (allBlocks
+                .stream()
+                .filter(b -> 
+                        b != this &&
+                        (getX() <= b.getXSpan() && getXSpan() >= b.getX()) &&
+                        b.getZSpan() == getZ() + signal
+                )
+                .count() > 0)
+        {
+            return;
+        }
+        
+        position.z += signal;
+    }
 
+    public void rotateX() 
+    {
+        do
+        {
+            for (Vec3d piece : pieces)
+            {
+                matrixMult(piece, rotX);
+            }
+        } while (getX() < 0 || getX() > 15 || getY() < 0 || getZ() < 0 || getZ() > 15);
+    }
+    
+    public void rotateY() 
+    {
+        do
+        {
+            for (Vec3d piece : pieces)
+            {
+                matrixMult(piece, rotY);
+            }
+        } while (getX() < 0 || getX() > 15 || getY() < 0 || getZ() < 0 || getZ() > 15);
+    }
+    
+    public void rotateZ() 
+    {
+        do
+        {
+            for (Vec3d piece : pieces)
+            {
+                matrixMult(piece, rotZ);
+            }
+        } while (getX() < 0 || getX() > 15 || getY() < 0 || getZ() < 0 || getZ() > 15);
+    }
+    
     public final ArrayList<Vec3d> getPieces()
     {
         return pieces;
@@ -126,33 +226,81 @@ public abstract class BlockBase
         return position;
     }
     
+    public final int getMinXPiecePos()
+    {
+        return ((Double)pieces.stream()
+            .mapToDouble(p -> p.x)
+            .min()
+            .getAsDouble()).intValue();
+    }
+    
+    public final int getMinYPiecePos()
+    {
+        return ((Double)pieces.stream()
+            .mapToDouble(p -> p.y)
+            .min()
+            .getAsDouble()).intValue();
+    }
+    
+    public final int getMinZPiecePos()
+    {
+        return ((Double)pieces.stream()
+            .mapToDouble(p -> p.z)
+            .min()
+            .getAsDouble()).intValue();
+    }
+    
+    public final int getX()
+    {
+        return ((Double)position.x).intValue() + getMinXPiecePos();
+    }
+    
+    public final int getY()
+    {
+        return ((Double)position.y).intValue() + getMinYPiecePos();
+    }
+    
+    public final int getZ()
+    {
+        return ((Double)position.z).intValue() + getMinZPiecePos();
+    }
+    
     public final int getXSpan() 
     {
-        return getXWidth() + ((Double)position.x).intValue();
+        return getX() + getXWidth();
     }
     
     public final int getYSpan() 
     {
-        return getHeight() + ((Double)position.y).intValue();
+        return getY() + getHeight();
     }
     
     public final int getZSpan() 
     {
-        return getZWidth() + ((Double)position.z).intValue();
+        return getZ() + getZWidth();
     }
     
     public final int getXWidth() 
     {
-        return ((Double)pieces.stream().mapToDouble(p -> p.x).max().getAsDouble()).intValue();
+        return ((Double)pieces.stream().mapToDouble(p -> p.x).max().getAsDouble()).intValue() - getMinXPiecePos();
     }
     
     public final int getHeight() 
     {
-        return ((Double)pieces.stream().mapToDouble(p -> p.y).max().getAsDouble()).intValue();
+        return ((Double)pieces.stream().mapToDouble(p -> p.y).max().getAsDouble()).intValue() - getMinYPiecePos();
     }
     
     public final int getZWidth() 
     {
-        return ((Double)pieces.stream().mapToDouble(p -> p.z).max().getAsDouble()).intValue();
+        return ((Double)pieces.stream().mapToDouble(p -> p.z).max().getAsDouble()).intValue() - getMinZPiecePos();
+    }
+    
+    private void matrixMult(Vec3d point, int[][] matrix)
+    {
+        Vec3d orig = new Vec3d(point.x, point.y, point.z);
+        
+        point.x = orig.x * matrix[0][0] + orig.y * matrix[1][0] + orig.z * matrix[2][0];
+        point.y = orig.x * matrix[0][1] + orig.y * matrix[1][1] + orig.z * matrix[2][1];
+        point.z = orig.x * matrix[0][2] + orig.y * matrix[1][2] + orig.z * matrix[2][2];
     }
 }
