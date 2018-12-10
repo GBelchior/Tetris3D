@@ -21,8 +21,6 @@ public class BlockI extends BlockBase
         getPieces().add(new Vec3d(1, 0, 0));
         getPieces().add(new Vec3d(2, 0, 0));
         getPieces().add(new Vec3d(3, 0, 0));
-        
-        init();
     }
 
 }

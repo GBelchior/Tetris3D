@@ -17,8 +17,6 @@ public class BlockPoint extends BlockBase
     {
         setColor(new Vec3d(1, 0, 0));
         getPieces().add(new Vec3d(0, 0, 0));
-        
-        init();
     }
     
 }

@@ -8,7 +8,10 @@ package tetris3d.game;
 import com.sun.javafx.geom.Vec3d;
 import com.sun.opengl.util.GLUT;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.media.opengl.GL;
 import tetris3d.blocks.*;
 
@@ -52,6 +55,12 @@ public class GameManager
 
     private void generateNextBlock()
     {
+        if (true) 
+        {
+            nextBlock = new BlockI();
+            return;
+        }
+        
         int numNextBlock = randomSource.nextInt(blockTypesCount);
 
         switch (numNextBlock)
@@ -78,6 +87,8 @@ public class GameManager
 
             if (!moved)
             {
+                cleanLevels();
+                
                 if (currentBlock.getYSpan() == maxHeight) 
                 {
                     gameOver = true;
@@ -115,7 +126,7 @@ public class GameManager
             currentBlock.getPosition().x = curPos.x;
         }
         
-        if (curPos.y >= 0 && curPos.y + currentBlock.getYWidth() <= maxHeight)
+        if (curPos.y >= 0 && curPos.y + currentBlock.getHeight() <= maxHeight)
         {
             currentBlock.getPosition().y = curPos.y;
         }
@@ -124,5 +135,47 @@ public class GameManager
         {
             currentBlock.getPosition().z = curPos.z;
         }
+    }
+    
+    private void cleanLevels() 
+    {
+        for (int i = 0; i < maxHeight; i++)
+        {
+            int levelPiecesCount = 0;
+            for (BlockBase block : blocks) 
+            {
+                if (!(i >= block.getPosition().y && i <= block.getYSpan()))
+                {
+                    continue;
+                }
+                
+                for (Vec3d piece : block.getPiecesAbsolutePosition())
+                {
+                    if (piece.y == i) levelPiecesCount++;
+                }
+            }
+            
+            if (levelPiecesCount == (maxWidth + 1) * (maxWidth + 1))
+            {
+                for (BlockBase block : blocks)
+                {
+                    block.removePiecesFromLevel(i);
+                    
+                    if (block.getPieces().isEmpty())
+                    {
+                        blocks.remove(block);
+                    }
+                }
+            }
+        }
+        
+        Boolean atLeastOneMoved = false;
+        do
+        {
+            for (BlockBase b : blocks)
+            {
+                if (b.moveDown(blocks)) atLeastOneMoved = true;
+            }
+        } while (atLeastOneMoved);
     }
 }

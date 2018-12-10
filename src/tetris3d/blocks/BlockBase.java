@@ -8,6 +8,8 @@ package tetris3d.blocks;
 import com.sun.javafx.geom.Vec3d;
 import com.sun.opengl.util.GLUT;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.media.opengl.GL;
 
 /**
@@ -21,10 +23,6 @@ public abstract class BlockBase
 
     private final Vec3d position;
     
-    private int maxX;
-    private int maxY;
-    private int maxZ;
-
     public BlockBase()
     {
         pieces = new ArrayList<>();
@@ -33,13 +31,6 @@ public abstract class BlockBase
         position = new Vec3d(0, 15, 0);
     }
     
-    protected final void init()
-    {
-        maxX = ((Double)pieces.stream().mapToDouble(p -> p.x).max().getAsDouble()).intValue();
-        maxY = ((Double)pieces.stream().mapToDouble(p -> p.y).max().getAsDouble()).intValue();
-        maxZ = ((Double)pieces.stream().mapToDouble(p -> p.z).max().getAsDouble()).intValue();
-    }
-
     public final void draw(GL gl, GLUT glut)
     {
         double[] currentColor = new double[4];
@@ -99,6 +90,26 @@ public abstract class BlockBase
     {
         return pieces;
     }
+    
+    public final List<Vec3d> getPiecesAbsolutePosition() 
+    {
+        return pieces.stream()
+            .map(p -> new Vec3d(p.x + position.x, p.y + position.y, p.z + position.z))
+            .collect(Collectors.toList());
+    }
+    
+    public final void removePiecesFromLevel(int level)
+    {
+        pieces.removeIf(p -> p.y + position.y == level);
+        
+        pieces.stream().filter(p -> p.y + position.y > level).forEach(p -> p.y--);
+        
+        while (pieces.stream().anyMatch(p -> p.y < 0))
+        {
+            position.y--;
+            pieces.stream().filter(p -> p.y < 0).forEach(p -> p.y++);
+        }
+    }
 
     public final Vec3d getColor()
     {
@@ -117,31 +128,31 @@ public abstract class BlockBase
     
     public final int getXSpan() 
     {
-        return maxX + ((Double)position.x).intValue();
+        return getXWidth() + ((Double)position.x).intValue();
     }
     
     public final int getYSpan() 
     {
-        return maxY + ((Double)position.y).intValue();
+        return getHeight() + ((Double)position.y).intValue();
     }
     
     public final int getZSpan() 
     {
-        return maxZ + ((Double)position.z).intValue();
+        return getZWidth() + ((Double)position.z).intValue();
     }
     
     public final int getXWidth() 
     {
-        return maxX;
+        return ((Double)pieces.stream().mapToDouble(p -> p.x).max().getAsDouble()).intValue();
     }
     
-    public final int getYWidth() 
+    public final int getHeight() 
     {
-        return maxY;
+        return ((Double)pieces.stream().mapToDouble(p -> p.y).max().getAsDouble()).intValue();
     }
     
     public final int getZWidth() 
     {
-        return maxZ;
+        return ((Double)pieces.stream().mapToDouble(p -> p.z).max().getAsDouble()).intValue();
     }
 }
