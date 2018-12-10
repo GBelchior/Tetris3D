@@ -5,8 +5,11 @@
  */
 package tetris3d.game;
 
+import com.sun.javafx.geom.Vec3d;
+import com.sun.opengl.util.GLUT;
 import java.util.ArrayList;
 import java.util.Random;
+import javax.media.opengl.GL;
 import tetris3d.blocks.*;
 
 /**
@@ -20,12 +23,17 @@ public class GameManager
     private BlockBase currentBlock;
     private BlockBase nextBlock;
 
-    private long lastBlockTick = -1;
-    private final int blockTickTimeMillis = 1000;
+    private long lastBlockTick;
+    private final int blockTickTimeMillis = 100;
+    
+    private final int maxWidth = 7;
+    private final int maxHeight = 15;
 
     private final int blockTypesCount = 2;
 
     private final Random randomSource;
+    
+    private Boolean gameOver = false;
 
     public GameManager()
     {
@@ -33,6 +41,13 @@ public class GameManager
         randomSource = new Random();
 
         generateNextBlock();
+        
+        currentBlock = nextBlock;
+        blocks.add(currentBlock);
+        
+        generateNextBlock();
+
+        lastBlockTick = System.currentTimeMillis();
     }
 
     private void generateNextBlock()
@@ -51,25 +66,63 @@ public class GameManager
         }
     }
 
-    public void gameTick()
+    public void gameTick(GL gl, GLUT glut)
     {
         long currentTime = System.currentTimeMillis();
 
-        if (lastBlockTick < 0)
-        {
-            lastBlockTick = System.currentTimeMillis();
-        }
-
         if (currentTime - lastBlockTick >= blockTickTimeMillis)
         {
-            Boolean moved = currentBlock.moveDown();
+            lastBlockTick = currentTime;
+
+            Boolean moved = currentBlock.moveDown(blocks);
 
             if (!moved)
             {
-                currentBlock = nextBlock;
-                generateNextBlock();
-                blocks.add(nextBlock);
+                if (currentBlock.getYSpan() == maxHeight) 
+                {
+                    gameOver = true;
+                }
+                
+                if (!gameOver) 
+                {
+                    currentBlock = nextBlock;
+                    blocks.add(currentBlock);
+                    generateNextBlock();
+                }
             }
+        }
+
+        for (BlockBase block : blocks)
+        {
+            block.draw(gl, glut);
+        }
+    }
+    
+    public void moveCurrentBlock(int relativeX, int relativeY, int relativeZ)
+    {
+        Vec3d curPos = new Vec3d(
+                currentBlock.getPosition().x,
+                currentBlock.getPosition().y,
+                currentBlock.getPosition().z
+        );
+        
+        curPos.x += relativeX;
+        curPos.y += relativeY;
+        curPos.z += relativeZ;
+        
+        if (curPos.x >= 0 && curPos.x + currentBlock.getXWidth() <= maxWidth) 
+        {
+            currentBlock.getPosition().x = curPos.x;
+        }
+        
+        if (curPos.y >= 0 && curPos.y + currentBlock.getYWidth() <= maxHeight)
+        {
+            currentBlock.getPosition().y = curPos.y;
+        }
+        
+        if (curPos.z >= 0 && curPos.z + currentBlock.getZWidth() <= maxWidth) 
+        {
+            currentBlock.getPosition().z = curPos.z;
         }
     }
 }

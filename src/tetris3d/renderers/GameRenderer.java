@@ -10,6 +10,8 @@ import com.sun.opengl.util.GLUT;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -35,9 +37,7 @@ public class GameRenderer implements GLEventListener
     private final JFrame jFrame;
     private final GLJPanel gljPanel;
     
-    private final ArrayList<BlockBase> blocks;
-    
-    private long lastMovement = -1;
+    private final GameManager gameManager;
 
     public GameRenderer(GameManager gameManager)
     {
@@ -45,9 +45,7 @@ public class GameRenderer implements GLEventListener
         glut = new GLUT();
         jFrame = new JFrame();
         
-        blocks = new ArrayList<>();
-        
-        blocks.add(new BlockI());
+        this.gameManager = gameManager;
 
         jFrame.addWindowListener(new WindowAdapter()
         {
@@ -59,6 +57,28 @@ public class GameRenderer implements GLEventListener
                     System.exit(0);
                 }).start();
             }
+        });
+        
+        jFrame.addKeyListener(new KeyListener()
+        {
+            @Override
+            public void keyTyped(KeyEvent e) { }
+            
+            @Override
+            public void keyReleased(KeyEvent e) { }
+            
+            @Override
+            public void keyPressed(KeyEvent e)
+            {
+                switch (e.getKeyChar()) 
+                {
+                    case 'w': case 'W': gameManager.moveCurrentBlock(0, 0, -1); break;
+                    case 's': case 'S': gameManager.moveCurrentBlock(0, 0, 1); break;
+                    case 'a': case 'A': gameManager.moveCurrentBlock(-1, 0, 0); break;
+                    case 'd': case 'D': gameManager.moveCurrentBlock(1, 0, 0); break;
+                }
+            }
+
         });
 
         gljPanel = new GLJPanel();
@@ -91,11 +111,6 @@ public class GameRenderer implements GLEventListener
 
         int n = 8;
         
-        if (lastMovement < 0) 
-        {
-            lastMovement = System.currentTimeMillis();
-        }
-
         gl.glPushMatrix();
         gl.glRotated(30, 1, 0, 0);
         gl.glRotated(-45, 0, 1, 0);
@@ -189,33 +204,11 @@ public class GameRenderer implements GLEventListener
                 gl.glColor3d(1, 1, 1);
             gl.glPopMatrix();
         
-            gameTick(gl);
+            gameManager.gameTick(gl, glut);
             
         gl.glPopMatrix();
     }
     
-    private void gameTick(GL gl) 
-    {
-        long curFrame = System.currentTimeMillis();
-        Boolean canMoveDown = false;
-        
-        if ((curFrame - lastMovement) >= 100) 
-        {
-            lastMovement = curFrame;
-            canMoveDown = true;
-        }
-        
-        for (BlockBase block : blocks) 
-        {
-            if (canMoveDown) 
-            {
-                block.moveDown();
-            }
-            
-            block.draw(gl, glut);
-        }
-    }
-
     @Override
     public void reshape(GLAutoDrawable glad, int x, int y, int w, int h)
     {
