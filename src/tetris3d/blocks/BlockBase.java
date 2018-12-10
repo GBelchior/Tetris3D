@@ -91,18 +91,41 @@ public abstract class BlockBase
             canMoveDown = false;
         }
         
-        if (allBlocks
-                .stream()
-                .filter(b -> 
+        List<BlockBase> possibleCollidingBlocks = allBlocks.stream()
+                .filter(b ->
                         b != this &&
-                        b.getYSpan() == getY() - 1 &&
+                        b.getYSpan() >= getY() - 1 &&
                         (getX() <= b.getXSpan() && getXSpan() >= b.getX()) &&
                         (getZ() <= b.getZSpan() && getZSpan() >= b.getZ())
-                )
-                .count() > 0)
+                ).collect(Collectors.toList());
+        
+        List<Vec3d> myPiecesAbsPos = getPiecesAbsolutePosition();
+        for (BlockBase block : possibleCollidingBlocks)
         {
-            canMoveDown = false;
+            for (Vec3d piece : block.getPiecesAbsolutePosition())
+            {
+                if (myPiecesAbsPos.stream().anyMatch(p -> p.x == piece.x && p.y - 1 == piece.y && p.z == piece.z))
+                {
+                    canMoveDown = false;
+                    break;
+                }
+            }
+            
+            if (!canMoveDown) break;
         }
+        
+//        if (allBlocks
+//                .stream()
+//                .filter(b -> 
+//                        b != this &&
+//                        b.getYSpan() == getY() - 1 &&
+//                        (getX() <= b.getXSpan() && getXSpan() >= b.getX()) &&
+//                        (getZ() <= b.getZSpan() && getZSpan() >= b.getZ())
+//                )
+//                .count() > 0)
+//        {
+//            canMoveDown = false;
+//        }
         
         if (canMoveDown) 
         {

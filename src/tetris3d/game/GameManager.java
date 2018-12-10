@@ -27,7 +27,7 @@ public class GameManager
     private BlockBase nextBlock;
 
     private long lastBlockTick;
-    private final int blockTickTimeMillis = 500;
+    private final int blockTickTimeMillis = 800;
 
     private final int maxWidth = 7;
     private final int maxHeight = 15;
@@ -56,6 +56,8 @@ public class GameManager
     private void generateNextBlock()
     {
         int numNextBlock = randomSource.nextInt(blockTypesCount);
+        
+        if (true) numNextBlock = 1;
 
         switch (numNextBlock)
         {
