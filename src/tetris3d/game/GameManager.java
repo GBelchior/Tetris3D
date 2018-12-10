@@ -57,8 +57,6 @@ public class GameManager
     {
         int numNextBlock = randomSource.nextInt(blockTypesCount);
         
-        if (true) numNextBlock = 1;
-
         switch (numNextBlock)
         {
             default:

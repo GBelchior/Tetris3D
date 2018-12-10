@@ -7,15 +7,14 @@ package tetris3d.renderers;
 
 import com.sun.opengl.util.Animator;
 import com.sun.opengl.util.GLUT;
-import java.awt.Cursor;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
@@ -23,7 +22,6 @@ import javax.media.opengl.GLJPanel;
 import javax.media.opengl.glu.GLU;
 import javax.swing.JFrame;
 import tetris3d.game.GameManager;
-import tetris3d.blocks.*;
 
 /**
  *
@@ -38,6 +36,11 @@ public class GameRenderer implements GLEventListener
     private final GLJPanel gljPanel;
     
     private final GameManager gameManager;
+    
+    private int xRot = 0;
+    private int yRot = 0;
+    
+    private Point mousePt;
 
     public GameRenderer(GameManager gameManager)
     {
@@ -84,7 +87,28 @@ public class GameRenderer implements GLEventListener
                     case KeyEvent.VK_P: gameManager.getCurrentBlock().rotateZ(); break;
                 }
             }
-
+        });
+        
+        jFrame.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(MouseEvent e) 
+            {
+                mousePt = e.getPoint();
+            }
+        });
+        
+        jFrame.addMouseMotionListener(new MouseMotionAdapter()
+        {
+            @Override
+            public void mouseDragged(MouseEvent e)
+            {
+                xRot += (e.getY() - mousePt.y) * 0.05;
+                yRot += (e.getX() - mousePt.x) * 0.05;
+                
+                if (xRot > 360) xRot = 0;
+                if (yRot > 360) yRot = 0;
+            }
         });
 
         gljPanel = new GLJPanel();
@@ -93,10 +117,7 @@ public class GameRenderer implements GLEventListener
         jFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         jFrame.setUndecorated(true);
         jFrame.getContentPane().add(gljPanel);
-
-//        BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-//        Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
-//        jFrame.getContentPane().setCursor(blankCursor);
+        
         jFrame.setVisible(true);
     }
 
@@ -118,8 +139,8 @@ public class GameRenderer implements GLEventListener
         int n = 8;
         
         gl.glPushMatrix();
-        gl.glRotated(30, 1, 0, 0);
-        gl.glRotated(-45, 0, 1, 0);
+        gl.glRotated(30 + xRot, 1, 0, 0);
+        gl.glRotated(-45 + yRot, 0, 1, 0);
         
         gl.glTranslated(0, -5, 0);
 

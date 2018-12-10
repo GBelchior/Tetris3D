@@ -114,19 +114,6 @@ public abstract class BlockBase
             if (!canMoveDown) break;
         }
         
-//        if (allBlocks
-//                .stream()
-//                .filter(b -> 
-//                        b != this &&
-//                        b.getYSpan() == getY() - 1 &&
-//                        (getX() <= b.getXSpan() && getXSpan() >= b.getX()) &&
-//                        (getZ() <= b.getZSpan() && getZSpan() >= b.getZ())
-//                )
-//                .count() > 0)
-//        {
-//            canMoveDown = false;
-//        }
-        
         if (canMoveDown) 
         {
             position.y--;
@@ -187,7 +174,7 @@ public abstract class BlockBase
             {
                 matrixMult(piece, rotX);
             }
-        } while (getX() < 0 || getX() > 15 || getY() < 0 || getZ() < 0 || getZ() > 15);
+        } while (getX() < 0 || getXSpan() > 7 || getY() < 0 || getZ() < 0 || getZSpan()> 7);
     }
     
     public void rotateY() 
@@ -198,7 +185,7 @@ public abstract class BlockBase
             {
                 matrixMult(piece, rotY);
             }
-        } while (getX() < 0 || getX() > 15 || getY() < 0 || getZ() < 0 || getZ() > 15);
+        } while (getX() < 0 || getXSpan()> 7 || getY() < 0 || getZ() < 0 || getZSpan()> 7);
     }
     
     public void rotateZ() 
@@ -209,7 +196,7 @@ public abstract class BlockBase
             {
                 matrixMult(piece, rotZ);
             }
-        } while (getX() < 0 || getX() > 15 || getY() < 0 || getZ() < 0 || getZ() > 15);
+        } while (getX() < 0 || getXSpan() > 7 || getY() < 0 || getZ() < 0 || getZSpan() > 7);
     }
     
     public final List<Vec3d> getPieces()
@@ -227,16 +214,6 @@ public abstract class BlockBase
     public final void removePiecesFromLevel(int level)
     {
         pieces.removeIf(p -> p.y + position.y == level);
-//        Iterator<Vec3d> piecesIter = pieces.iterator();
-//        while (piecesIter.hasNext())
-//        {
-//            Vec3d piece = piecesIter.next();
-//            
-//            if (piece.y + position.y == level)
-//            {
-//                piecesIter.remove();
-//            }
-//        }
 
         pieces.stream().filter(p -> p.y + position.y > level).forEach(p -> p.y--);
 
