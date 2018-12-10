@@ -8,6 +8,7 @@ package tetris3d.blocks;
 import com.sun.javafx.geom.Vec3d;
 import com.sun.opengl.util.GLUT;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.media.opengl.GL;
@@ -18,7 +19,7 @@ import javax.media.opengl.GL;
  */
 public abstract class BlockBase
 {
-    private final ArrayList<Vec3d> pieces;
+    private ArrayList<Vec3d> pieces;
     private Vec3d color;
 
     private final Vec3d position;
@@ -115,13 +116,14 @@ public abstract class BlockBase
     {
         int signal = (direction < 0 ? -1 : 1);
         
-        if (getX() == (direction < 0 ? 0 : 15)) return;
+        if ((direction < 0 && getX() == 0) || (direction > 0 && getXSpan() == 7)) return;
         
         if (allBlocks
                 .stream()
                 .filter(b -> 
                         b != this &&
-                        b.getXSpan() == getX() + signal &&
+                        (b.getYSpan() >= getY() - 1) &&
+                        ((direction < 0 && b.getXSpan() == getX() - 1) || (direction > 0 && b.getX() == getXSpan() + 1)) &&
                         (getZ() <= b.getZSpan() && getZSpan() >= b.getZ())
                 )
                 .count() > 0)
@@ -136,14 +138,15 @@ public abstract class BlockBase
     {
         int signal = (direction < 0 ? -1 : 1);
         
-        if (getZ() == (direction < 0 ? 0 : 15)) return;
+        if ((direction < 0 && getZ() == 0) || (direction > 0 && getZSpan() == 7)) return;
         
         if (allBlocks
                 .stream()
                 .filter(b -> 
                         b != this &&
-                        (getX() <= b.getXSpan() && getXSpan() >= b.getX()) &&
-                        b.getZSpan() == getZ() + signal
+                        (b.getYSpan() >= getY() - 1) &&
+                        ((direction < 0 && b.getZSpan() == getZ() - 1) || (direction > 0 && b.getZ() == getZSpan() + 1)) &&
+                        (getX() <= b.getXSpan() && getXSpan() >= b.getX())
                 )
                 .count() > 0)
         {
@@ -186,7 +189,7 @@ public abstract class BlockBase
         } while (getX() < 0 || getX() > 15 || getY() < 0 || getZ() < 0 || getZ() > 15);
     }
     
-    public final ArrayList<Vec3d> getPieces()
+    public final List<Vec3d> getPieces()
     {
         return pieces;
     }
@@ -201,9 +204,19 @@ public abstract class BlockBase
     public final void removePiecesFromLevel(int level)
     {
         pieces.removeIf(p -> p.y + position.y == level);
-        
+//        Iterator<Vec3d> piecesIter = pieces.iterator();
+//        while (piecesIter.hasNext())
+//        {
+//            Vec3d piece = piecesIter.next();
+//            
+//            if (piece.y + position.y == level)
+//            {
+//                piecesIter.remove();
+//            }
+//        }
+
         pieces.stream().filter(p -> p.y + position.y > level).forEach(p -> p.y--);
-        
+
         while (pieces.stream().anyMatch(p -> p.y < 0))
         {
             position.y--;
@@ -228,6 +241,11 @@ public abstract class BlockBase
     
     public final int getMinXPiecePos()
     {
+        if (pieces.isEmpty())
+        {
+            return 0;
+        }
+        
         return ((Double)pieces.stream()
             .mapToDouble(p -> p.x)
             .min()
@@ -236,6 +254,11 @@ public abstract class BlockBase
     
     public final int getMinYPiecePos()
     {
+        if (pieces.isEmpty())
+        {
+            return 0;
+        }
+        
         return ((Double)pieces.stream()
             .mapToDouble(p -> p.y)
             .min()
@@ -244,6 +267,11 @@ public abstract class BlockBase
     
     public final int getMinZPiecePos()
     {
+        if (pieces.isEmpty())
+        {
+            return 0;
+        }
+        
         return ((Double)pieces.stream()
             .mapToDouble(p -> p.z)
             .min()
@@ -282,16 +310,31 @@ public abstract class BlockBase
     
     public final int getXWidth() 
     {
+        if (pieces.isEmpty())
+        {
+            return 0;
+        }
+            
         return ((Double)pieces.stream().mapToDouble(p -> p.x).max().getAsDouble()).intValue() - getMinXPiecePos();
     }
     
     public final int getHeight() 
     {
+        if (pieces.isEmpty())
+        {
+            return 0;
+        }
+        
         return ((Double)pieces.stream().mapToDouble(p -> p.y).max().getAsDouble()).intValue() - getMinYPiecePos();
     }
     
     public final int getZWidth() 
     {
+        if (pieces.isEmpty())
+        {
+            return 0;
+        }
+        
         return ((Double)pieces.stream().mapToDouble(p -> p.z).max().getAsDouble()).intValue() - getMinZPiecePos();
     }
     

@@ -8,12 +8,10 @@ package tetris3d.game;
 import com.sun.javafx.geom.Vec3d;
 import com.sun.opengl.util.GLUT;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.media.opengl.GL;
 import tetris3d.blocks.*;
 
@@ -168,13 +166,17 @@ public class GameManager
 
             if (levelPiecesCount == (maxWidth + 1) * (maxWidth + 1))
             {
-                for (BlockBase block : blocks)
+                Iterator<BlockBase> iter = blocks.iterator();
+                
+                while (iter.hasNext())
                 {
+                    BlockBase block = iter.next();
+                    
                     block.removePiecesFromLevel(i);
-
+                    
                     if (block.getPieces().isEmpty())
                     {
-                        blocks.remove(block);
+                        iter.remove();
                     }
                 }
             }
